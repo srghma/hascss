@@ -37,6 +37,7 @@ module Hascss.AST where
     data AST
         = BlockDefn Selector [AST]
         | RuleBlock Rule
+        | NestedBlock AST
         deriving (Eq, Show, Ord, Generic)
 
     ruleName (Rule n b) = n

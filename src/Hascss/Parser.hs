@@ -104,10 +104,13 @@ module Hascss.Parser where
         lexeme $ char '{'
         body <- many $ lexeme ast
         lexeme $ char '}'
-        pure $ BlockDefn sel body 
+        pure $ BlockDefn sel body
 
     astRule :: Parser AST
     astRule = RuleBlock <$> rule
 
+    astNested :: Parser AST
+    astNested = NestedBlock <$> try (char '&' >> astBlock)
+
     ast :: Parser AST
-    ast = astBlock <|> astRule
+    ast = astBlock <|> astRule <|> astNested

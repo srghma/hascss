@@ -66,7 +66,6 @@ module Hascss.ParserSpec where
                     FuncallBody "darken" [VarBody "red", PercentageBody 5]
             it "parses var items" $
                 "$font-size" `shouldParseTo` VarBody "font-size"
-
         describe "Rule bodies" $ do
             let parse = parseMaybe ruleBody
             let shouldParseTo = shouldParseTo' parse
@@ -88,3 +87,14 @@ module Hascss.ParserSpec where
                 let sel = Selector Class "button"
                 let body = [ RuleBlock (Rule "margin-left" [LengthBody $ Length 10 "px"]) ]
                 b `shouldParseTo` BlockDefn sel body
+            it "parses a nested AST" $ do
+                let str = ".button {\n .foo {\n margin-left: 10px;\n } \n }"
+                let ampStr = ".button { &.foo { margin-left: 10px; } }"
+                let inner = BlockDefn 
+                        (Selector Class "foo")
+                        [RuleBlock $ Rule "margin-left" [LengthBody (Length 10 "px")]]
+                let outer = BlockDefn
+                        (Selector Class "button")
+                        [inner]
+                str `shouldParseTo` outer
+                ampStr `shouldParseTo` BlockDefn (Selector Class "button") [NestedBlock inner]
