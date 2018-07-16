@@ -32,6 +32,9 @@ module Hascss.Parser where
             identChar = alphaNumChar <|> otherSyms
             otherSyms = char '-' <|> char '_'
     
+    varName :: Parser Stringish
+    varName = try (char '$' >> identifier)
+
     selector :: Parser Selector
     selector = try classSelector <|> try idSelector <|> try elementSelector
         where
@@ -75,20 +78,36 @@ module Hascss.Parser where
         char ')'
         pure $ FuncallBody name args
 
+    varBody :: Parser RuleBodyItem
+    varBody = VarBody <$> varName
+
     ruleBodyItem :: Parser RuleBodyItem
     ruleBodyItem = lexeme ( funcallBody
                         <|> lengthBody
                         <|> percentageBody 
                         <|> numberBody
+                        <|> varBody
                         <|> literalBody)
 
     ruleBody :: Parser RuleBody 
     ruleBody = ruleBodyItem `manyTill` char ';'
 
     rule :: Parser Rule
-    rule = do 
+    rule = try $ do 
         n <- identifier
         lexeme $ char ':'
         Rule n <$> ruleBody
-
     
+    astBlock :: Parser AST
+    astBlock = try $ do 
+        sel <- lexeme selector
+        lexeme $ char '{'
+        body <- many $ lexeme ast
+        lexeme $ char '}'
+        pure $ BlockDefn sel body 
+
+    astRule :: Parser AST
+    astRule = RuleBlock <$> rule
+
+    ast :: Parser AST
+    ast = astBlock <|> astRule

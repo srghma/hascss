@@ -59,9 +59,14 @@ module Hascss.ParserSpec where
                 "red" `shouldParseTo` LiteralBody "red"
             it "parses percentage items" $
                 "10%" `shouldParseTo` PercentageBody 10
-            it "parses funcall items" $
+            it "parses funcall items" $ do
                 "rgba(1,1,1,0.5)" `shouldParseTo`
                     FuncallBody "rgba" (map NumberBody [1, 1, 1, 0.5])
+                "darken($red, 5%)" `shouldParseTo`
+                    FuncallBody "darken" [VarBody "red", PercentageBody 5]
+            it "parses var items" $
+                "$font-size" `shouldParseTo` VarBody "font-size"
+
         describe "Rule bodies" $ do
             let parse = parseMaybe ruleBody
             let shouldParseTo = shouldParseTo' parse
@@ -73,5 +78,13 @@ module Hascss.ParserSpec where
         describe "Rules" $ do
             let parse = parseMaybe rule
             let shouldParseTo = shouldParseTo' parse
-            it "parses simple body-rule pairs" $ do
+            it "parses simple body-rule pairs" $
                 "font-size: 10em;" `shouldParseTo` Rule "font-size" [(LengthBody $ Length 10 "em")]
+        describe "AST" $ do
+            let parse = parseMaybe ast 
+            let shouldParseTo = shouldParseTo' parse
+            it "parses a basic AST" $ do 
+                let b = ".button { margin-left: 10px; }"
+                let sel = Selector Class "button"
+                let body = [ RuleBlock (Rule "margin-left" [LengthBody $ Length 10 "px"]) ]
+                b `shouldParseTo` BlockDefn sel body

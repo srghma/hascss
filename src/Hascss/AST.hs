@@ -26,6 +26,7 @@ module Hascss.AST where
         | LiteralBody Stringish
         | NumberBody Number
         | FuncallBody Stringish [RuleBodyItem]
+        | VarBody Stringish
         deriving (Eq, Show, Ord, Generic)
 
     type RuleBody = [RuleBodyItem]
@@ -34,7 +35,7 @@ module Hascss.AST where
         deriving (Eq, Show, Ord, Generic)
 
     data AST
-        = Block Selector [AST]
+        = BlockDefn Selector [AST]
         | RuleBlock Rule
         deriving (Eq, Show, Ord, Generic)
 

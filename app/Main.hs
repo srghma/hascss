@@ -6,4 +6,4 @@ import Text.Megaparsec (parseTest)
 
 main :: IO ()
 main = do 
-    parseTest ruleBodyItem "rgba(1,1,1,0.5)"
+    parseTest ast ".foo {\nborder: 10px;\n}"
