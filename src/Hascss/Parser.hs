@@ -63,8 +63,8 @@ module Hascss.Parser where
 
     rule :: Parser Rule
     rule = do 
-        n <- lexeme identifier
-        char ':'
+        n <- identifier
+        lexeme $ char ':'
         Rule n <$> ruleBody
 
     

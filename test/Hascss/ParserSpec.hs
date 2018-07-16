@@ -5,6 +5,8 @@ module Hascss.ParserSpec where
     import Hascss.AST
 
     spec = do
+        let shouldParseTo' parser a b = parser a `shouldBe` pure b
+        let shouldNotParse' parser a = parser a `shouldBe` Nothing 
         describe "Identifier" $ do
             let shouldParse a = (parseMaybe identifier a) `shouldBe` pure a
             let shouldNotParse a = (parseMaybe identifier a) `shouldBe` Nothing
@@ -26,7 +28,7 @@ module Hascss.ParserSpec where
                 shouldNotParse "__"
         describe "Selectors" $ do 
             let parse = parseMaybe selector
-            let shouldParseTo a b = parse a `shouldBe` pure b
+            let shouldParseTo = shouldParseTo' parse
             it "parses class selectors" $
                 ".foo" `shouldParseTo` Selector Class "foo"
             it "parses id selectors" $ 
@@ -35,8 +37,8 @@ module Hascss.ParserSpec where
                 "foo" `shouldParseTo` Selector Element "foo"
         describe "Lengths" $ do 
             let parse = parseMaybe lengthP
-            let shouldParseTo a b = parse a `shouldBe` pure b
-            let shouldNotParse a = parse a `shouldBe` Nothing
+            let shouldParseTo = shouldParseTo' parse 
+            let shouldNotParse = shouldNotParse' parse
             it "parses easy lengths" $ 
                 "10rem" `shouldParseTo` Length 10 "rem"
             it "parses lengths with identifiers and decimals" $
@@ -47,4 +49,22 @@ module Hascss.ParserSpec where
                 "0" `shouldParseTo` Length 0 ""
             it "doesn't parse without units otherwise" $
                 shouldNotParse "10"
-            
+        describe "Rule body items" $ do
+            let parse = parseMaybe ruleBodyItem
+            let shouldParseTo = shouldParseTo' parse
+            let shouldNotParse = shouldNotParse' parse
+            it "parses length items" $
+                "10px" `shouldParseTo` LengthBody (Length 10 "px")
+        describe "Rule bodies" $ do
+            let parse = parseMaybe ruleBody
+            let shouldParseTo = shouldParseTo' parse
+            let shouldNotParse = shouldNotParse' parse 
+            it "parses multi length bodies" $
+                "10px 20px;" `shouldParseTo` [LengthBody $ Length 10 "px", LengthBody $ Length 20 "px"]
+            it "parses single length bodies" $ 
+                "10px;" `shouldParseTo` [LengthBody $ Length 10 "px"]
+        describe "Rules" $ do
+            let parse = parseMaybe rule
+            let shouldParseTo = shouldParseTo' parse
+            it "parses simple body-rule pairs" $ do
+                "font-size: 10em;" `shouldParseTo` Rule "font-size" [(LengthBody $ Length 10 "em")]

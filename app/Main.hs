@@ -1,6 +1,9 @@
 module Main where
 
-import Lib
+import Hascss.Parser
+
+import Text.Megaparsec (parseTest)
 
 main :: IO ()
-main = someFunc
+main = do 
+    parseTest rule "font-size: 10em;"
