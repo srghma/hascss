@@ -98,3 +98,5 @@ module Hascss.ParserSpec where
                         [inner]
                 str `shouldParseTo` outer
                 ampStr `shouldParseTo` BlockDefn (Selector Class "button") [NestedBlock inner]
+            it "parses a variable defn" $
+                "$bar: 10px;" `shouldParseTo` VariableDefn "bar" [LengthBody $ Length 10 "px"]

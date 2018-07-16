@@ -18,7 +18,7 @@ module Hascss.Parser where
     lexeme = L.lexeme sc
 
     identifier :: Parser Stringish
-    identifier = (++) <$> starting <*> many identChar
+    identifier = (++) <$> starting <*> many identChar <?> "Identifier"
         where
             starting :: Parser Stringish
             starting = normalStart <|> underscoreStart
@@ -34,6 +34,8 @@ module Hascss.Parser where
     
     varName :: Parser Stringish
     varName = try (char '$' >> identifier)
+
+    labelTry s p = label s $ try p 
 
     selector :: Parser Selector
     selector = try classSelector <|> try idSelector <|> try elementSelector
@@ -71,7 +73,7 @@ module Hascss.Parser where
     numberBody = NumberBody <$> doubleP
 
     funcallBody :: Parser RuleBodyItem
-    funcallBody = try $ do
+    funcallBody = labelTry "Function call" $ do
         name <- identifier
         char '('
         args <- ruleBodyItem `sepBy` lexeme (char ',')
@@ -79,7 +81,7 @@ module Hascss.Parser where
         pure $ FuncallBody name args
 
     varBody :: Parser RuleBodyItem
-    varBody = VarBody <$> varName
+    varBody = VarBody <$> varName <?> "Variable Name"
 
     ruleBodyItem :: Parser RuleBodyItem
     ruleBodyItem = lexeme ( funcallBody
@@ -90,16 +92,16 @@ module Hascss.Parser where
                         <|> literalBody)
 
     ruleBody :: Parser RuleBody 
-    ruleBody = ruleBodyItem `manyTill` char ';'
+    ruleBody = ruleBodyItem `someTill` char ';'
 
     rule :: Parser Rule
-    rule = try $ do 
+    rule = do 
         n <- identifier
         lexeme $ char ':'
         Rule n <$> ruleBody
     
     astBlock :: Parser AST
-    astBlock = try $ do 
+    astBlock = do 
         sel <- lexeme selector
         lexeme $ char '{'
         body <- many $ lexeme ast
@@ -112,5 +114,11 @@ module Hascss.Parser where
     astNested :: Parser AST
     astNested = NestedBlock <$> try (char '&' >> astBlock)
 
+    astVarDef :: Parser AST
+    astVarDef = try $ do 
+        n <- varName
+        lexeme $ char ':'
+        VariableDefn n <$> ruleBody
+
     ast :: Parser AST
-    ast = astBlock <|> astRule <|> astNested
+    ast = astRule <|> try astBlock <|> astNested <|> astVarDef
