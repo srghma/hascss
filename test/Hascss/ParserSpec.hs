@@ -33,4 +33,18 @@ module Hascss.ParserSpec where
                 "#foo" `shouldParseTo` Selector Id "foo"
             it "parses element selectors" $ 
                 "foo" `shouldParseTo` Selector Element "foo"
-        
+        describe "Lengths" $ do 
+            let parse = parseMaybe lengthP
+            let shouldParseTo a b = parse a `shouldBe` pure b
+            let shouldNotParse a = parse a `shouldBe` Nothing
+            it "parses easy lengths" $ 
+                "10rem" `shouldParseTo` Length 10 "rem"
+            it "parses lengths with identifiers and decimals" $
+                "10.0px" `shouldParseTo` Length 10 "px"
+            it "parses negative lengths with identifiers" $
+                "-10em" `shouldParseTo` Length (-10) "em"
+            it "parses zero without a unit" $
+                "0" `shouldParseTo` Length 0 ""
+            it "doesn't parse without units otherwise" $
+                shouldNotParse "10"
+            

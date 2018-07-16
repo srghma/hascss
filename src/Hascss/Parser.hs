@@ -38,10 +38,16 @@ module Hascss.Parser where
             classSelector = char '.' >> Selector Class <$> identifier
             idSelector = char '#' >> Selector Id <$> identifier
             elementSelector = Selector Element <$> identifier
-        
+    
+    doubleP :: Parser Double 
+    doubleP = try pureDouble <|> integralDouble
+        where
+            pureDouble = L.signed (pure ()) L.float
+            integralDouble = fromIntegral <$> L.signed (pure ()) L.decimal 
+
     lengthP :: Parser Length
     lengthP = do
-        f <- L.float
+        f <- doubleP
         if f == 0.0 then
             pure $ Length 0 ""
         else Length f <$> identifier
