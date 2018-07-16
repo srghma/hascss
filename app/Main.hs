@@ -6,4 +6,4 @@ import Text.Megaparsec (parseTest)
 
 main :: IO ()
 main = do 
-    parseTest rule "font-size: 10em;"
+    parseTest ruleBodyItem "rgba(1,1,1,0.5)"

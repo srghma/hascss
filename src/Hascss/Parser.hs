@@ -46,7 +46,7 @@ module Hascss.Parser where
             integralDouble = fromIntegral <$> L.signed (pure ()) L.decimal 
 
     lengthP :: Parser Length
-    lengthP = do
+    lengthP = try $ do
         f <- doubleP
         if f == 0.0 then
             pure $ Length 0 ""
@@ -55,8 +55,32 @@ module Hascss.Parser where
     lengthBody :: Parser RuleBodyItem
     lengthBody = LengthBody <$> lengthP
 
+    literalBody :: Parser RuleBodyItem
+    literalBody = LiteralBody <$> identifier
+
+    percentageBody :: Parser RuleBodyItem
+    percentageBody = try $ do
+        f <- doubleP
+        char '%'
+        pure $ PercentageBody f
+
+    numberBody :: Parser RuleBodyItem
+    numberBody = NumberBody <$> doubleP
+
+    funcallBody :: Parser RuleBodyItem
+    funcallBody = try $ do
+        name <- identifier
+        char '('
+        args <- ruleBodyItem `sepBy` lexeme (char ',')
+        char ')'
+        pure $ FuncallBody name args
+
     ruleBodyItem :: Parser RuleBodyItem
-    ruleBodyItem = lexeme lengthBody 
+    ruleBodyItem = lexeme ( funcallBody
+                        <|> lengthBody
+                        <|> percentageBody 
+                        <|> numberBody
+                        <|> literalBody)
 
     ruleBody :: Parser RuleBody 
     ruleBody = ruleBodyItem `manyTill` char ';'

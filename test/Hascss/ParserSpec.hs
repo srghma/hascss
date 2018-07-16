@@ -8,8 +8,8 @@ module Hascss.ParserSpec where
         let shouldParseTo' parser a b = parser a `shouldBe` pure b
         let shouldNotParse' parser a = parser a `shouldBe` Nothing 
         describe "Identifier" $ do
-            let shouldParse a = (parseMaybe identifier a) `shouldBe` pure a
-            let shouldNotParse a = (parseMaybe identifier a) `shouldBe` Nothing
+            let shouldParse a = parseMaybe identifier a `shouldBe` pure a
+            let shouldNotParse a = parseMaybe identifier a `shouldBe` Nothing
             it "allows valid, normal identifiers" $
                 shouldParse "foo"
             it "disallows starting numbers" $
@@ -47,7 +47,7 @@ module Hascss.ParserSpec where
                 "-10em" `shouldParseTo` Length (-10) "em"
             it "parses zero without a unit" $
                 "0" `shouldParseTo` Length 0 ""
-            it "doesn't parse without units otherwise" $
+            it "requires units for nonzero lengths" $
                 shouldNotParse "10"
         describe "Rule body items" $ do
             let parse = parseMaybe ruleBodyItem
@@ -55,6 +55,13 @@ module Hascss.ParserSpec where
             let shouldNotParse = shouldNotParse' parse
             it "parses length items" $
                 "10px" `shouldParseTo` LengthBody (Length 10 "px")
+            it "parses literal items" $
+                "red" `shouldParseTo` LiteralBody "red"
+            it "parses percentage items" $
+                "10%" `shouldParseTo` PercentageBody 10
+            it "parses funcall items" $
+                "rgba(1,1,1,0.5)" `shouldParseTo`
+                    FuncallBody "rgba" (map NumberBody [1, 1, 1, 0.5])
         describe "Rule bodies" $ do
             let parse = parseMaybe ruleBody
             let shouldParseTo = shouldParseTo' parse
