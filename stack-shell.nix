@@ -1,5 +1,5 @@
 {
-  pkgs ? import <nixpkgs-master> {},
+  pkgs ? import <nixpkgs-unstable> {},
   # there are 2 ways of using stack with nix
   # - define custom packages in `stack.yaml` `packages` option (https://docs.haskellstack.org/en/stable/nix_integration/#additions-to-your-stackyaml)
   # - define custom package in `shell.nix` AND `shell-file: ...` in `stack.yaml` (https://docs.haskellstack.org/en/stable/nix_integration/#additions-to-your-stackyaml)
