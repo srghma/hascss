@@ -15,7 +15,11 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-12.0
+resolver: lts-14.13
+
+nix:
+  enable: true
+  shell-file: stack-shell.nix
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
